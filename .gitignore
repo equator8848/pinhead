@@ -1,0 +1,4 @@
+/venv
+.idea
+*.whl
+**/__pycache__
