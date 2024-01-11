@@ -5,6 +5,8 @@ import sys
 import os
 import time
 
+handle_file_count = 0
+
 
 def get_file_md5(file_path):
     """
@@ -40,7 +42,9 @@ def get_file_meta_recursion(file_path):
         if not os.path.exists(full_path):
             continue
         if os.path.isfile(full_path):
-            # print(f"读取文件：{full_path}")
+            global handle_file_count
+            handle_file_count += 1
+            print(f"scan file：{full_path}, count {handle_file_count}")
 
             file_md5 = get_file_md5(full_path)
             file_create_time = get_file_create_time(full_path)
@@ -73,8 +77,20 @@ if __name__ == '__main__':
     file_meta_list = get_file_meta_recursion(target_path)
 
     for file_meta in file_meta_list:
-        new_file_name = f"{file_meta['file_create_time']}_{file_meta['file_md5']}{file_meta['file_ext_arr'][1]}"
+        # new_file_name = f"{file_meta['file_create_time']}_{file_meta['file_md5']}{file_meta['file_ext_arr'][1]}"
+        new_file_name = f"{file_meta['file_md5']}{file_meta['file_ext_arr'][1]}"
         file_path_without_ext = file_meta['file_ext_arr'][0]
         new_file_path = file_path_without_ext[0:file_path_without_ext.rindex(os.sep)] + os.sep + new_file_name
-        print(f"rename_by_create_time_md5 rename {file_meta['full_path']} to {new_file_path}")
-        # os.rename(file_meta['full_path'], new_file_path)
+        current_file_path = file_meta['full_path']
+        print(f"rename_by_create_time_md5 rename {current_file_path} to {new_file_path}")
+
+        if current_file_path == new_file_path:
+            # 名字已是符合格式的，跳过
+            print(f"rename_by_create_time_md5 skip {current_file_path}")
+            continue
+
+        if os.path.exists(new_file_path):
+            print(f"rename_by_create_time_md5 delete file {new_file_path}")
+            os.remove(new_file_path)
+
+        os.rename(current_file_path, new_file_path)
